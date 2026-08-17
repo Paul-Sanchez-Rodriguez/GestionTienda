@@ -1,0 +1,88 @@
+<section class="hero">
+  <div class="hero__content">
+    <h1>{{ store.name }}</h1>
+    <p class="hero__tagline">{{ store.tagline }}</p>
+    <p class="hero__description">{{ store.description }}</p>
+    <a href="#productos" class="hero__cta">Explorar productos</a>
+  </div>
+</section>
+
+<section id="productos" class="catalog" aria-label="Catálogo de productos">
+  <div class="section-inner">
+    <h2>Nuestros productos</h2>
+
+    <div class="catalog__search">
+      <label class="catalog__search-label" for="product-search">Buscar producto</label>
+      <div class="catalog__search-field">
+        <svg class="catalog__search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Zm8.03 13.47a1 1 0 0 1 1.41 0l1.77 1.77a1 1 0 0 1-1.41 1.41l-1.77-1.77a1 1 0 0 1 0-1.41Z"
+          />
+        </svg>
+        <input
+          id="product-search"
+          type="search"
+          class="catalog__search-input"
+          placeholder="Escribe el nombre del producto..."
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
+        />
+        @if (searchQuery()) {
+          <button
+            type="button"
+            class="catalog__search-clear"
+            aria-label="Limpiar búsqueda"
+            (click)="clearSearch()"
+          >
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="catalog__filters" role="tablist">
+      <button
+        class="filter-btn"
+        [class.active]="selectedCategory() === 'Todos'"
+        (click)="selectCategory('Todos')"
+        role="tab"
+      >
+        Todos
+      </button>
+      @for (cat of categories; track cat) {
+        <button
+          class="filter-btn"
+          [class.active]="selectedCategory() === cat"
+          (click)="selectCategory(cat)"
+          role="tab"
+        >
+          {{ cat }}
+        </button>
+      }
+    </div>
+
+    @if (filteredProducts.length) {
+      <div class="product-grid">
+        @for (product of filteredProducts; track product.id) {
+          <app-product-card [product]="product" />
+        }
+      </div>
+    } @else {
+      <p class="catalog__empty">No se encontraron productos con ese nombre.</p>
+    }
+  </div>
+</section>
+
+<section id="contacto" class="contact" aria-label="Información de contacto">
+  <div class="section-inner contact__grid">
+    <div>
+      <h2>Visítanos</h2>
+      <p>{{ store.address }}</p>
+      <p>{{ store.hours }}</p>
+    </div>
+    <div>
+      <h2>Escríbenos</h2>
+      <p>{{ store.phone }}</p>
+      <p>{{ store.email }}</p>
+    </div>
+  </div>
+</section>

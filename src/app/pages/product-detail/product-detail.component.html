@@ -1,0 +1,39 @@
+@if (product) {
+  <div class="detail">
+    <a routerLink="/" class="detail__back">&larr; Volver al catálogo</a>
+
+    <div class="detail__grid">
+      <div class="detail__image">
+        <img [src]="product.image" [alt]="product.name" />
+      </div>
+
+      <div class="detail__info">
+        <span class="detail__category">{{ product.category }}</span>
+        <h1>{{ product.name }}</h1>
+        <div class="detail__rating">★ {{ product.rating }} / 5</div>
+        <p class="detail__description">{{ product.description }}</p>
+
+        <div class="detail__price-block">
+          <span class="detail__price">{{ product.price | currency: 'EUR' }}</span>
+          @if (product.stock > 0) {
+            <span class="detail__stock detail__stock--available">
+              En stock ({{ product.stock }} unidades)
+            </span>
+          } @else {
+            <span class="detail__stock detail__stock--unavailable">Agotado</span>
+          }
+        </div>
+
+        <button class="detail__btn" [disabled]="product.stock === 0">
+          {{ product.stock > 0 ? 'Añadir al carrito' : 'No disponible' }}
+        </button>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="not-found">
+    <h1>Producto no encontrado</h1>
+    <p>El producto que buscas no existe o fue eliminado.</p>
+    <a routerLink="/" class="not-found__link">Volver al inicio</a>
+  </div>
+}

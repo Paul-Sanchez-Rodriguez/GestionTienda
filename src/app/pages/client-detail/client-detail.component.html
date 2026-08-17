@@ -1,0 +1,199 @@
+@if (client) {
+  <section class="client-detail">
+    <a routerLink="/clientes" class="client-detail__back">&larr; Volver a clientes</a>
+
+    <div class="client-detail__hero">
+      <div class="client-detail__identity">
+        <div class="client-detail__avatar">
+          {{ client.name.charAt(0) }}{{ client.lastname.charAt(0) }}
+        </div>
+        <div>
+          <h1>{{ client.name }} {{ client.lastname }}</h1>
+          <p>{{ client.phone || 'Sin teléfono registrado' }}</p>
+          <span class="client-detail__account-date">
+            Cuenta actual desde {{ client.accountStartedAt | date: 'dd/MM/yyyy HH:mm' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="client-detail__debt-box">
+        <span>Deuda total</span>
+        <strong>{{ client.debt | currency: 'EUR' }}</strong>
+        <button
+          type="button"
+          class="client-detail__pay-btn"
+          [disabled]="client.debt === 0"
+          (click)="registerPayment()"
+        >
+          Registrar pago
+        </button>
+      </div>
+    </div>
+
+    @if (paymentMessage()) {
+      <p class="client-detail__message">{{ paymentMessage() }}</p>
+    }
+
+    <div class="client-detail__layout">
+      <section class="panel">
+        <h2>Registrar compra a crédito</h2>
+        <p class="panel__hint">Agrega productos a la cuenta del cliente.</p>
+
+        <div class="purchase-form">
+          <div class="product-picker">
+            <label class="product-picker__label" for="product-search">Buscar producto</label>
+            <div class="product-picker__search">
+              <svg class="product-picker__icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Zm8.03 13.47a1 1 0 0 1 1.41 0l1.77 1.77a1 1 0 0 1-1.41 1.41l-1.77-1.77a1 1 0 0 1 0-1.41Z"
+                />
+              </svg>
+              <input
+                id="product-search"
+                type="search"
+                class="product-picker__input"
+                placeholder="Escribe el nombre o categoría..."
+                [value]="productSearchQuery()"
+                (input)="onProductSearchInput($event)"
+              />
+              @if (productSearchQuery()) {
+                <button
+                  type="button"
+                  class="product-picker__clear"
+                  aria-label="Limpiar búsqueda"
+                  (click)="clearProductSearch()"
+                >
+                  ×
+                </button>
+              }
+            </div>
+
+            @if (selectedProduct) {
+              <div class="product-picker__selected">
+                <div>
+                  <strong>{{ selectedProduct.name }}</strong>
+                  <span>{{ selectedProduct.category }} · {{ selectedProduct.price | currency: 'EUR' }}</span>
+                </div>
+                <button type="button" (click)="clearSelectedProduct()">Cambiar</button>
+              </div>
+            } @else if (showProductResults) {
+              <div class="product-picker__list" role="listbox" aria-label="Resultados de productos">
+                @if (filteredProducts.length) {
+                  @for (product of filteredProducts; track product.id) {
+                    <button
+                      type="button"
+                      class="product-picker__item"
+                      role="option"
+                      (click)="selectProduct(product.id)"
+                    >
+                      <span class="product-picker__name">{{ product.name }}</span>
+                      <span class="product-picker__meta">
+                        {{ product.category }} · {{ product.price | currency: 'EUR' }}
+                      </span>
+                    </button>
+                  }
+                } @else {
+                  <p class="product-picker__empty">No se encontraron productos.</p>
+                }
+              </div>
+              <p class="product-picker__count">
+                {{ filteredProducts.length }} producto(s) encontrado(s)
+              </p>
+            } @else {
+              <p class="product-picker__hint">
+                Escribe el nombre del producto para ver resultados. Ideal para catálogos grandes.
+              </p>
+            }
+          </div>
+
+          <label>
+            Cantidad
+            <input
+              type="number"
+              min="1"
+              [value]="quantity()"
+              (input)="onQuantityChange($event)"
+            />
+          </label>
+
+          @if (selectedProduct) {
+            <p class="purchase-form__preview">
+              Total: <strong>{{ purchasePreviewTotal | currency: 'EUR' }}</strong>
+            </p>
+          }
+
+          <button
+            type="button"
+            class="purchase-form__submit"
+            [disabled]="!selectedProduct"
+            (click)="addPurchase()"
+          >
+            Agregar a la cuenta
+          </button>
+        </div>
+      </section>
+
+      <section class="panel panel--wide">
+        <div class="panel__header">
+          <div>
+            <h2>Historial de compras</h2>
+            <p class="panel__hint">Filtra por día, semana, mes o toda la cuenta actual.</p>
+          </div>
+          <div class="period-filters" role="tablist">
+            @for (period of periods; track period.value) {
+              <button
+                type="button"
+                class="period-btn"
+                [class.active]="selectedPeriod() === period.value"
+                (click)="selectPeriod(period.value)"
+              >
+                {{ period.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (purchases.length) {
+          <div class="history-table-wrap">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Producto</th>
+                  <th>Cant.</th>
+                  <th>Precio unit.</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (purchase of purchases; track purchase.id) {
+                  <tr>
+                    <td>{{ purchase.purchasedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ purchase.productName }}</td>
+                    <td>{{ purchase.quantity }}</td>
+                    <td>{{ purchase.unitPrice | currency: 'EUR' }}</td>
+                    <td>{{ purchase.total | currency: 'EUR' }}</td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4">Subtotal del periodo</td>
+                  <td>{{ filteredTotal | currency: 'EUR' }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        } @else {
+          <p class="panel__empty">No hay compras en este periodo.</p>
+        }
+      </section>
+    </div>
+  </section>
+} @else {
+  <div class="not-found">
+    <h1>Cliente no encontrado</h1>
+    <p>El cliente que buscas no existe o fue eliminado.</p>
+    <a routerLink="/clientes" class="not-found__link">Volver a clientes</a>
+  </div>
+}

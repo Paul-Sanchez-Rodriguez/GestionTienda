@@ -1,0 +1,126 @@
+<section class="clients">
+  <div class="clients__header">
+    <div>
+      <h1>Clientes</h1>
+      <p>Control de cuentas a crédito (fiado) y deudas pendientes.</p>
+    </div>
+    <button type="button" class="clients__add-btn" (click)="toggleForm()">
+      {{ showForm() ? 'Cancelar' : '+ Nuevo cliente' }}
+    </button>
+  </div>
+
+  <div class="clients__summary">
+    <article class="summary-card">
+      <span class="summary-card__label">Clientes activos</span>
+      <strong class="summary-card__value">{{ clients.length }}</strong>
+    </article>
+    <article class="summary-card summary-card--debt">
+      <span class="summary-card__label">Deuda total</span>
+      <strong class="summary-card__value">{{ totalDebt | currency: 'EUR' }}</strong>
+    </article>
+  </div>
+
+  @if (showForm()) {
+    <form class="client-form" (submit)="createClient($event)">
+      <h2>Registrar cliente</h2>
+      <div class="client-form__grid">
+        <label>
+          Nombre
+          <input
+            type="text"
+            placeholder="Juan"
+            [value]="formName()"
+            (input)="onFormInput('name', $event)"
+            required
+          />
+        </label>
+        <label>
+          Apellido
+          <input
+            type="text"
+            placeholder="Pérez"
+            [value]="formLastname()"
+            (input)="onFormInput('lastname', $event)"
+            required
+          />
+        </label>
+        <label>
+          Teléfono
+          <input
+            type="tel"
+            placeholder="555-0000"
+            [value]="formPhone()"
+            (input)="onFormInput('phone', $event)"
+          />
+        </label>
+      </div>
+      <button type="submit" class="client-form__submit">Guardar cliente</button>
+    </form>
+  }
+
+  <div class="clients__search">
+    <label class="clients__search-label" for="client-search">Buscar cliente</label>
+    <div class="clients__search-field">
+      <svg class="clients__search-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Zm8.03 13.47a1 1 0 0 1 1.41 0l1.77 1.77a1 1 0 0 1-1.41 1.41l-1.77-1.77a1 1 0 0 1 0-1.41Z"
+        />
+      </svg>
+      <input
+        id="client-search"
+        type="search"
+        class="clients__search-input"
+        placeholder="Nombre, apellido o teléfono..."
+        [value]="searchQuery()"
+        (input)="onSearchInput($event)"
+      />
+      @if (searchQuery()) {
+        <button
+          type="button"
+          class="clients__search-clear"
+          aria-label="Limpiar búsqueda"
+          (click)="clearSearch()"
+        >
+          ×
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (clients.length) {
+    <div class="clients__grid">
+      @for (client of clients; track client.id) {
+        <a [routerLink]="['/clientes', client.id]" class="client-card">
+          <div class="client-card__top">
+            <div class="client-card__avatar">
+              {{ client.name.charAt(0) }}{{ client.lastname.charAt(0) }}
+            </div>
+            <div>
+              <h2>{{ client.name }} {{ client.lastname }}</h2>
+              <p>{{ client.phone || 'Sin teléfono' }}</p>
+            </div>
+          </div>
+
+          <div class="client-card__stats">
+            <div>
+              <span>Deuda actual</span>
+              <strong [class.client-card__debt--zero]="client.debt === 0">
+                {{ client.debt | currency: 'EUR' }}
+              </strong>
+            </div>
+            <div>
+              <span>Compras en cuenta</span>
+              <strong>{{ client.purchaseCount }}</strong>
+            </div>
+          </div>
+
+          <p class="client-card__account">
+            Cuenta abierta desde {{ client.accountStartedAt | date: 'dd/MM/yyyy' }}
+          </p>
+        </a>
+      }
+    </div>
+  } @else {
+    <p class="clients__empty">No se encontraron clientes.</p>
+  }
+</section>

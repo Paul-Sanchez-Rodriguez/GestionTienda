@@ -1,0 +1,21 @@
+<article class="card">
+  <a [routerLink]="['/producto', product().id]" class="card__image-link">
+    <img [src]="product().image" [alt]="product().name" loading="lazy" />
+  </a>
+
+  <div class="card__body">
+    <span class="card__category">{{ product().category }}</span>
+    <h3 class="card__title">
+      <a [routerLink]="['/producto', product().id]">{{ product().name }}</a>
+    </h3>
+    <p class="card__description">{{ product().description }}</p>
+
+    <div class="card__footer">
+      <div class="card__meta">
+        <span class="card__price">{{ product().price | currency: 'EUR' }}</span>
+        <span class="card__rating">★ {{ product().rating }}</span>
+      </div>
+      <a [routerLink]="['/producto', product().id]" class="card__btn">Ver detalle</a>
+    </div>
+  </div>
+</article>
